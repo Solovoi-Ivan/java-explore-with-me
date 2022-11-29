@@ -22,7 +22,7 @@ public class EventMapper {
                 e.getId(), u, e.getPaid(), e.getTitle(), views);
     }
 
-    public Event fromDto(NewEventDto e, LocalDateTime created ,int userId, EventState state) {
+    public Event fromDto(NewEventDto e, LocalDateTime created, int userId, EventState state) {
         return new Event(e.getAnnotation(), e.getCategory(), created, e.getDescription(),
                 e.getEventDate(), userId, e.getLocation().getLat(), e.getLocation().getLon(), e.getPaid(),
                 e.getParticipantLimit(), e.getRequestModeration(), state, e.getTitle());
