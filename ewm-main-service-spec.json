@@ -1428,7 +1428,7 @@
           {
             "description": "id пользователей",
             "in": "query",
-            "name": "ids",
+            "name": "users",
             "required": false,
             "schema": {
               "type": "array",
