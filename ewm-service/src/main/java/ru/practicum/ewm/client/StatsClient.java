@@ -28,7 +28,6 @@ public class StatsClient {
     }
 
     public List<ViewStats> getStats(int eventId) {
-        System.out.println(host);
         String uriForGet = UriComponentsBuilder.fromHttpUrl(host + "/stats")
                 .queryParam("start", "2000-01-01 00:00:00")
                 .queryParam("end", "2100-01-01 00:00:00")

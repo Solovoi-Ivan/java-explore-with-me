@@ -13,10 +13,7 @@ import ru.practicum.ewm.mappers.CompilationMapper;
 import ru.practicum.ewm.mappers.EventMapper;
 import ru.practicum.ewm.mappers.UserMapper;
 import ru.practicum.ewm.repositories.*;
-import ru.practicum.ewm.util.EventSort;
-import ru.practicum.ewm.util.EventState;
-import ru.practicum.ewm.util.ListPagination;
-import ru.practicum.ewm.util.RequestStatus;
+import ru.practicum.ewm.util.*;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
@@ -54,9 +51,9 @@ public class PublicService {
                         .anyMatch(i -> e.getCategoryId().equals(i)))
                 .filter(e -> paid == null || e.getPaid().equals(paid))
                 .filter(e -> rangeStart == null || e.getEventDate()
-                        .isAfter(LocalDateTime.parse(rangeStart, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+                        .isAfter(LocalDateTime.parse(rangeStart, DateTimeFormatter.ofPattern(JsonConstants.pattern))))
                 .filter(e -> rangeEnd == null || e.getEventDate()
-                        .isBefore(LocalDateTime.parse(rangeEnd, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+                        .isBefore(LocalDateTime.parse(rangeEnd, DateTimeFormatter.ofPattern(JsonConstants.pattern))))
                 .filter(e -> rangeStart != null || rangeEnd != null || e.getEventDate().isAfter(LocalDateTime.now()))
                 .filter(e -> !onlyAvailable || e.getParticipantLimit() - getConfirmedRequests(e) > 0)
                 .collect(Collectors.toList());
@@ -80,27 +77,25 @@ public class PublicService {
 
     public EventFullDto getEventById(int eventId) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new EntityNotFoundException("Событие не найдено"));
+                .orElseThrow(() -> new EntityNotFoundException("Событие " + eventId + " не найдено"));
         if (event.getState().equals(EventState.PUBLISHED)) {
             statsClient.addEndpointHit("app", "/events/" + eventId, "ip");
             return getEventFullDto(event);
         } else {
-            throw new RuntimeException("Событие не опубликовано");
+            throw new RuntimeException("Событие " + eventId + " не опубликовано");
         }
     }
 
     public List<CompilationDto> getAllCompilations(Boolean pinned, int from, int size) {
         PageRequest pr = PageRequest.of(from / size, size, Sort.by("id"));
         if (pinned == null) {
-            return compilationRepository
-                    .findAll(pr).stream()
+            return compilationRepository.findAll(pr).stream()
                     .map(c -> compilationMapper.toDto(c, c.getEvents().stream()
                             .map(this::getEventShortDto)
                             .collect(Collectors.toList())))
                     .collect(Collectors.toList());
         } else {
-            return compilationRepository
-                    .findByPinned(pinned, pr).stream()
+            return compilationRepository.findByPinned(pinned, pr).stream()
                     .map(c -> compilationMapper.toDto(c, c.getEvents().stream()
                             .map(this::getEventShortDto)
                             .collect(Collectors.toList())))
@@ -110,9 +105,10 @@ public class PublicService {
 
     public CompilationDto getCompilationById(int compId) {
         Compilation compilation = compilationRepository.findById(compId)
-                .orElseThrow(() -> new EntityNotFoundException("Подборка не найдена"));
+                .orElseThrow(() -> new EntityNotFoundException("Подборка " + compId + " не найдена"));
         return compilationMapper.toDto(compilation, compilation.getEvents().stream()
-                .map(this::getEventShortDto).collect(Collectors.toList()));
+                .map(this::getEventShortDto)
+                .collect(Collectors.toList()));
     }
 
     public List<CategoryDto> getAllCategories(int from, int size) {
@@ -126,32 +122,32 @@ public class PublicService {
         return getCategoryDtoById(catId);
     }
 
-    EventFullDto getEventFullDto(Event event) {
+    public EventFullDto getEventFullDto(Event event) {
         return eventMapper.toDto(event, getCategoryDtoById(event.getCategoryId()),
                 getConfirmedRequests(event), getUserShortDtoById(event.getInitiatorId()), getViews(event.getId()));
     }
 
-    EventShortDto getEventShortDto(Event event) {
+    public EventShortDto getEventShortDto(Event event) {
         CategoryDto catDto = getCategoryDtoById(event.getCategoryId());
         UserShortDto userDto = getUserShortDtoById(event.getInitiatorId());
         return eventMapper.toShortDto(event, catDto, getConfirmedRequests(event), userDto, getViews(event.getId()));
     }
 
-    CategoryDto getCategoryDtoById(int catId) {
+    public CategoryDto getCategoryDtoById(int catId) {
         return categoryMapper.toDto(categoryRepository.findById(catId)
-                .orElseThrow(() -> new EntityNotFoundException("Категория не найдена")));
+                .orElseThrow(() -> new EntityNotFoundException("Категория " + catId + " не найдена")));
     }
 
-    UserShortDto getUserShortDtoById(int userId) {
+    public UserShortDto getUserShortDtoById(int userId) {
         return userMapper.toShortDto(userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден")));
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь " + userId + " не найден")));
     }
 
-    int getConfirmedRequests(Event e) {
+    public int getConfirmedRequests(Event e) {
         return requestRepository.findByEventIdAndStatus(e.getId(), RequestStatus.CONFIRMED).size();
     }
 
-    int getViews(int eventId) {
+    public int getViews(int eventId) {
         int views = 0;
         for (ViewStats v : statsClient.getStats(eventId)) {
             views += v.getHits();

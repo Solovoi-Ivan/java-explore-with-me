@@ -41,7 +41,8 @@ public class PrivateService {
 
     public EventFullDto updateEvent(UpdateEventRequest updateEventRequest, int userId) {
         Event event = eventRepository.findById(updateEventRequest.getEventId())
-                .orElseThrow(() -> new EntityNotFoundException("Событие не найдено"));
+                .orElseThrow(() -> new EntityNotFoundException("Событие " +
+                        updateEventRequest.getEventId() + " не найдено"));
         if (!event.getInitiatorId().equals(userId)) {
             throw new RuntimeException("Редактировать событие может только его организатор");
         }
@@ -100,17 +101,17 @@ public class PrivateService {
 
     public EventFullDto getUserEventById(int userId, int eventId) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new EntityNotFoundException("Событие не найдено"));
+                .orElseThrow(() -> new EntityNotFoundException("Событие " + eventId + " не найдено"));
         if (event.getInitiatorId().equals(userId)) {
             return publicService.getEventFullDto(event);
         } else {
-            throw new RuntimeException("Указанный пользователь не добавлял такого события");
+            throw new RuntimeException("Пользователь " + userId + " не добавлял такого события");
         }
     }
 
     public EventFullDto cancelUserEvent(int userId, int eventId) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new EntityNotFoundException("Событие не найдено"));
+                .orElseThrow(() -> new EntityNotFoundException("Событие " + eventId + " не найдено"));
         if (event.getInitiatorId().equals(userId)) {
             if (event.getState().equals(EventState.PENDING)) {
                 event.setState(EventState.CANCELED);
@@ -120,15 +121,15 @@ public class PrivateService {
                 throw new RuntimeException("Можно отменить только событие, ожидающее модерации");
             }
         } else {
-            throw new RuntimeException("Указанный пользователь не добавлял такого события");
+            throw new RuntimeException("Пользователь " + userId + " не добавлял такого события");
         }
     }
 
     public List<ParticipationRequestDto> getEventParticipationRequests(int userId, int eventId) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new EntityNotFoundException("Событие не найдено"));
+                .orElseThrow(() -> new EntityNotFoundException("Событие " + eventId + " не найдено"));
         if (!event.getInitiatorId().equals(userId)) {
-            throw new RuntimeException("Указанный пользователь не добавлял такого события");
+            throw new RuntimeException("Пользователь " + userId + " не добавлял такого события");
         }
         return requestRepository.findByEventId(eventId).stream()
                 .map(requestMapper::toDto)
@@ -137,9 +138,9 @@ public class PrivateService {
 
     public ParticipationRequestDto approveParticipationRequest(int userId, int eventId, int reqId) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new EntityNotFoundException("Событие не найдено"));
+                .orElseThrow(() -> new EntityNotFoundException("Событие " + eventId + " не найдено"));
         ParticipationRequest request = requestRepository.findById(reqId)
-                .orElseThrow(() -> new EntityNotFoundException("Запрос на участие не найден"));
+                .orElseThrow(() -> new EntityNotFoundException("Запрос на участие " + reqId + " не найден"));
 
         if (!event.getInitiatorId().equals(userId)) {
             throw new RuntimeException("Неверно указан автор события");
@@ -163,9 +164,9 @@ public class PrivateService {
 
     public ParticipationRequestDto rejectParticipationRequest(int userId, int eventId, int reqId) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new EntityNotFoundException("Событие не найдено"));
+                .orElseThrow(() -> new EntityNotFoundException("Событие " + eventId + " не найдено"));
         ParticipationRequest request = requestRepository.findById(reqId)
-                .orElseThrow(() -> new EntityNotFoundException("Запрос на участие не найден"));
+                .orElseThrow(() -> new EntityNotFoundException("Запрос на участие " + reqId + " не найден"));
 
         if (!event.getInitiatorId().equals(userId)) {
             throw new RuntimeException("Неверно указан автор события");
@@ -179,7 +180,7 @@ public class PrivateService {
             request.setStatus(RequestStatus.REJECTED);
             return requestMapper.toDto(requestRepository.save(request));
         } else {
-            throw new RuntimeException("Запрос не находится на рассмотрении");
+            throw new RuntimeException("Запрос " + reqId + " не находится на рассмотрении");
         }
     }
 
@@ -191,9 +192,9 @@ public class PrivateService {
 
     public ParticipationRequestDto createParticipationRequest(int userId, int eventId) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new EntityNotFoundException("Событие не найдено"));
+                .orElseThrow(() -> new EntityNotFoundException("Событие " + eventId + " не найдено"));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь " + userId + " не найден"));
 
         if (event.getInitiatorId().equals(user.getId())) {
             throw new RuntimeException("Нельзя участвовать в собственном событии");
@@ -220,7 +221,7 @@ public class PrivateService {
 
     public ParticipationRequestDto cancelParticipationRequest(int userId, int requestId) {
         ParticipationRequest request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new EntityNotFoundException("Запрос на участие не найден"));
+                .orElseThrow(() -> new EntityNotFoundException("Запрос на участие " + requestId + " не найден"));
         if (!request.getRequesterId().equals(userId)) {
             throw new RuntimeException("Неверно указан автор запроса на участие");
         }

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.ewm.exceptions.UnsupportedStateException;
 import ru.practicum.ewm.exceptions.ValidationException;
+import ru.practicum.ewm.util.JsonConstants;
 
 import javax.persistence.EntityNotFoundException;
 import java.sql.SQLException;
@@ -24,7 +25,7 @@ public class GeneralExceptionHandler {
         return Map.of("status", HttpStatus.BAD_REQUEST.toString(),
                 "reason", "Validation error",
                 "message", e.getMessage(),
-                "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern(JsonConstants.pattern)));
     }
 
     @ExceptionHandler({EntityNotFoundException.class})
@@ -33,7 +34,7 @@ public class GeneralExceptionHandler {
         return Map.of("status", HttpStatus.NOT_FOUND.toString(),
                 "reason", "Entity Not Found error",
                 "message", e.getMessage(),
-                "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern(JsonConstants.pattern)));
     }
 
     @ExceptionHandler({UnsupportedStateException.class})
@@ -42,7 +43,7 @@ public class GeneralExceptionHandler {
         return Map.of("status", HttpStatus.INTERNAL_SERVER_ERROR.toString(),
                 "reason", "Unsupported State error",
                 "message", e.getMessage(),
-                "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern(JsonConstants.pattern)));
     }
 
     @ExceptionHandler
@@ -51,7 +52,7 @@ public class GeneralExceptionHandler {
         return Map.of("status", HttpStatus.CONFLICT.toString(),
                 "reason", "Database error",
                 "message", e.getMessage(),
-                "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern(JsonConstants.pattern)));
     }
 
     @ExceptionHandler({IllegalArgumentException.class})
@@ -60,7 +61,7 @@ public class GeneralExceptionHandler {
         return Map.of("status", HttpStatus.BAD_REQUEST.toString(),
                 "reason", "Illegal Argument error",
                 "message", e.getMessage(),
-                "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern(JsonConstants.pattern)));
     }
 
     @ExceptionHandler({NullPointerException.class})
@@ -69,7 +70,7 @@ public class GeneralExceptionHandler {
         return Map.of("status", HttpStatus.BAD_REQUEST.toString(),
                 "reason", "Null Pointer Exception error",
                 "message", e.getMessage(),
-                "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern(JsonConstants.pattern)));
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class})
@@ -78,6 +79,6 @@ public class GeneralExceptionHandler {
         return Map.of("status", HttpStatus.BAD_REQUEST.toString(),
                 "reason", "Argument Not Valid error",
                 "message", e.getMessage(),
-                "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern(JsonConstants.pattern)));
     }
 }

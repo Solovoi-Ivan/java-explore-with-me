@@ -6,6 +6,7 @@ import ru.practicum.ewm.stat.dto.EndpointHit;
 import ru.practicum.ewm.stat.dto.ViewStats;
 import ru.practicum.ewm.stat.entities.Hit;
 import ru.practicum.ewm.stat.repositories.StatRepository;
+import ru.practicum.ewm.stat.util.JsonConstants;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,7 +23,7 @@ public class StatService {
     }
 
     public List<ViewStats> getStats(String start, String end, List<String> uris, Boolean unique) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(JsonConstants.pattern);
         if (unique) {
             return statRepository.getUniqueViews(LocalDateTime.parse(start, formatter),
                             LocalDateTime.parse(end, formatter)).stream()

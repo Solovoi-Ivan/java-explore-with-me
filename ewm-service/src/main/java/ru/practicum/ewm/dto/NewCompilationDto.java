@@ -13,9 +13,9 @@ import java.util.List;
 @NoArgsConstructor
 public class NewCompilationDto {
     @NotNull
-    List<Integer> events;
+    private List<Integer> events;
     @NotNull
-    Boolean pinned;
+    private Boolean pinned;
     @NotBlank
-    String title;
+    private String title;
 }
