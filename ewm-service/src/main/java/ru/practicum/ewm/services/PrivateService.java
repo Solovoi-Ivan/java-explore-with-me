@@ -241,7 +241,7 @@ public class PrivateService {
             userEventRatingRepository.save(new UserEventRating(userId, eventId, true));
         } else {
             if (userEventRating.getIsPositive()) {
-                throw new RuntimeException("Этот пользователь уже оценивал событие");
+                throw new ValidationException("Этот пользователь уже оценивал событие");
             } else {
                 userEventRating.setIsPositive(true);
                 userEventRatingRepository.save(userEventRating);
@@ -261,7 +261,7 @@ public class PrivateService {
             userEventRatingRepository.save(new UserEventRating(userId, eventId, false));
         } else {
             if (!userEventRating.getIsPositive()) {
-                throw new RuntimeException("Этот пользователь уже оценивал событие");
+                throw new ValidationException("Этот пользователь уже оценивал событие");
             } else {
                 userEventRating.setIsPositive(false);
                 userEventRatingRepository.save(userEventRating);
@@ -278,12 +278,12 @@ public class PrivateService {
                 .orElseThrow(() -> new EntityNotFoundException("Пользователь " + userId + " не найден"));
         UserEventRating userEventRating = ratingValidation(user, event);
         if (userEventRating == null) {
-            throw new RuntimeException("Этот пользователь не ставил лайк событию");
+            throw new ValidationException("Этот пользователь не ставил лайк событию");
         } else {
             if (userEventRating.getIsPositive()) {
                 userEventRatingRepository.deleteById(new UserEventRatingId(user.getId(), event.getId()));
             } else {
-                throw new RuntimeException("Этот пользователь не ставил лайк событию");
+                throw new ValidationException("Этот пользователь не ставил лайк событию");
             }
         }
 
@@ -297,10 +297,10 @@ public class PrivateService {
                 .orElseThrow(() -> new EntityNotFoundException("Пользователь " + userId + " не найден"));
         UserEventRating userEventRating = ratingValidation(user, event);
         if (userEventRating == null) {
-            throw new RuntimeException("Этот пользователь не ставил дислайк событию");
+            throw new ValidationException("Этот пользователь не ставил дислайк событию");
         } else {
             if (userEventRating.getIsPositive()) {
-                throw new RuntimeException("Этот пользователь не ставил дислайк событию");
+                throw new ValidationException("Этот пользователь не ставил дислайк событию");
             } else {
                 userEventRatingRepository.deleteById(new UserEventRatingId(user.getId(), event.getId()));
             }
