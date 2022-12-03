@@ -29,9 +29,9 @@ public class GeneralExceptionHandler {
     }
 
     @ExceptionHandler({RuntimeException.class})
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleRuntimeException(final RuntimeException e) {
-        return Map.of("status", HttpStatus.INTERNAL_SERVER_ERROR.toString(),
+        return Map.of("status", HttpStatus.BAD_REQUEST.toString(),
                 "reason", "Internal Server error",
                 "message", e.getMessage(),
                 "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern(JsonConstants.pattern)));
