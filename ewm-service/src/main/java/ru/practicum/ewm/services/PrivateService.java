@@ -5,17 +5,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.dto.*;
-import ru.practicum.ewm.entities.Event;
-import ru.practicum.ewm.entities.ParticipationRequest;
-import ru.practicum.ewm.entities.User;
+import ru.practicum.ewm.entities.*;
 import ru.practicum.ewm.exceptions.ValidationException;
 import ru.practicum.ewm.mappers.EventMapper;
 import ru.practicum.ewm.mappers.ParticipationRequestMapper;
+import ru.practicum.ewm.repositories.UserEventRatingRepository;
 import ru.practicum.ewm.repositories.EventRepository;
 import ru.practicum.ewm.repositories.ParticipationRequestRepository;
 import ru.practicum.ewm.repositories.UserRepository;
 import ru.practicum.ewm.util.EventState;
 import ru.practicum.ewm.util.RequestStatus;
+import ru.practicum.ewm.util.UserEventRatingId;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
@@ -28,6 +28,7 @@ public class PrivateService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final ParticipationRequestRepository requestRepository;
+    private final UserEventRatingRepository userEventRatingRepository;
     private final EventMapper eventMapper;
     private final ParticipationRequestMapper requestMapper;
     private final PublicService publicService;
@@ -230,9 +231,110 @@ public class PrivateService {
         return requestMapper.toDto(requestRepository.save(request));
     }
 
-    void participantLimitValidation(Event e) {
+    public EventShortDto addEventLike(int userId, int eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EntityNotFoundException("Событие " + eventId + " не найдено"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь " + userId + " не найден"));
+        UserEventRating userEventRating = ratingValidation(user, event);
+        if (userEventRating == null) {
+            userEventRatingRepository.save(new UserEventRating(userId, eventId, true));
+        } else {
+            if (userEventRating.getIsPositive()) {
+                throw new RuntimeException("Этот пользователь уже оценивал событие");
+            } else {
+                userEventRating.setIsPositive(true);
+                userEventRatingRepository.save(userEventRating);
+            }
+        }
+
+        return publicService.getEventShortDto(event);
+    }
+
+    public EventShortDto addEventDislike(int userId, int eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EntityNotFoundException("Событие " + eventId + " не найдено"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь " + userId + " не найден"));
+        UserEventRating userEventRating = ratingValidation(user, event);
+        if (userEventRating == null) {
+            userEventRatingRepository.save(new UserEventRating(userId, eventId, false));
+        } else {
+            if (!userEventRating.getIsPositive()) {
+                throw new RuntimeException("Этот пользователь уже оценивал событие");
+            } else {
+                userEventRating.setIsPositive(false);
+                userEventRatingRepository.save(userEventRating);
+            }
+        }
+
+        return publicService.getEventShortDto(event);
+    }
+
+    public EventShortDto removeEventLike(int userId, int eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EntityNotFoundException("Событие " + eventId + " не найдено"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь " + userId + " не найден"));
+        UserEventRating userEventRating = ratingValidation(user, event);
+        if (userEventRating == null) {
+            throw new RuntimeException("Этот пользователь не ставил лайк событию");
+        } else {
+            if (userEventRating.getIsPositive()) {
+                userEventRatingRepository.deleteById(new UserEventRatingId(user.getId(), event.getId()));
+            } else {
+                throw new RuntimeException("Этот пользователь не ставил лайк событию");
+            }
+        }
+
+        return publicService.getEventShortDto(event);
+    }
+
+    public EventShortDto removeEventDislike(int userId, int eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EntityNotFoundException("Событие " + eventId + " не найдено"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь " + userId + " не найден"));
+        UserEventRating userEventRating = ratingValidation(user, event);
+        if (userEventRating == null) {
+            throw new RuntimeException("Этот пользователь не ставил дислайк событию");
+        } else {
+            if (userEventRating.getIsPositive()) {
+                throw new RuntimeException("Этот пользователь не ставил дислайк событию");
+            } else {
+                userEventRatingRepository.deleteById(new UserEventRatingId(user.getId(), event.getId()));
+            }
+        }
+
+        return publicService.getEventShortDto(event);
+    }
+
+    public void participantLimitValidation(Event e) {
         if (e.getParticipantLimit() - publicService.getConfirmedRequests(e) == 0 && e.getParticipantLimit() != 0) {
             throw new RuntimeException("Превышен лимит количества участников");
         }
+    }
+
+    public UserEventRating ratingValidation(User user, Event event) {
+        UserEventRating userEventRating = userEventRatingRepository
+                .findById(new UserEventRatingId(user.getId(), event.getId()))
+                .orElse(null);
+        if (!event.getState().equals(EventState.PUBLISHED)) {
+            throw new ValidationException("Нельзя оценивать неопубликованное событие");
+        }
+
+        if (event.getInitiatorId().equals(user.getId())) {
+            throw new ValidationException("Нельзя оценивать собственное событие");
+        }
+
+        if (event.getEventDate().isAfter(LocalDateTime.now())) {
+            throw new ValidationException("Нельзя оценивать событие, которое ещё не произошло");
+        }
+
+        if (getUserParticipationRequests(user.getId()).stream()
+                .noneMatch(p -> p.getEvent().equals(event.getId()) && p.getStatus().equals(RequestStatus.CONFIRMED))) {
+            throw new ValidationException("Нельзя оценивать событие, которое вы не посетили");
+        }
+        return userEventRating;
     }
 }

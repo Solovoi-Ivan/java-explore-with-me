@@ -6,14 +6,12 @@ import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.entities.Category;
 import ru.practicum.ewm.entities.Compilation;
 import ru.practicum.ewm.entities.Event;
+import ru.practicum.ewm.entities.User;
 import ru.practicum.ewm.exceptions.ValidationException;
 import ru.practicum.ewm.mappers.CategoryMapper;
 import ru.practicum.ewm.mappers.CompilationMapper;
 import ru.practicum.ewm.mappers.UserMapper;
-import ru.practicum.ewm.repositories.CategoryRepository;
-import ru.practicum.ewm.repositories.CompilationRepository;
-import ru.practicum.ewm.repositories.EventRepository;
-import ru.practicum.ewm.repositories.UserRepository;
+import ru.practicum.ewm.repositories.*;
 import ru.practicum.ewm.util.EventState;
 import ru.practicum.ewm.util.JsonConstants;
 import ru.practicum.ewm.util.ListPagination;
@@ -150,13 +148,13 @@ public class AdminService {
         return ListPagination.getPage(userRepository.findAll().stream()
                         .filter(u -> users == null || users.stream()
                                 .anyMatch(i -> u.getId().equals(i)))
-                        .map(userMapper::toDto)
+                        .map(u -> userMapper.toDto(u, addUserRating(u)))
                         .collect(Collectors.toList()),
                 from / size, size);
     }
 
     public UserDto createUser(NewUserRequest userDto) {
-        return userMapper.toDto(userRepository.save(userMapper.fromDto(userDto)));
+        return userMapper.toDto(userRepository.save(userMapper.fromDto(userDto)), 0);
     }
 
     public void deleteUser(int userId) {
@@ -213,5 +211,15 @@ public class AdminService {
                 .orElseThrow(() -> new EntityNotFoundException("Подборка " + compId + " не найдена"));
         compilation.setPinned(true);
         compilationRepository.save(compilation);
+    }
+
+    public Double addUserRating(User user) {
+        List<Integer> list = eventRepository.findByInitiatorIdAndState(user.getId(), EventState.PUBLISHED).stream()
+                .map(e -> publicService.getRating(e.getId()))
+                .collect(Collectors.toList());
+
+        return list.stream()
+                .mapToInt(x -> x)
+                .average().orElse(0.0);
     }
 }

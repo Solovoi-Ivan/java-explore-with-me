@@ -13,6 +13,8 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
 
     List<Event> findByInitiatorId(int initiatorId, PageRequest pageRequest);
 
+    List<Event> findByInitiatorIdAndState(int initiatorId, EventState eventState);
+
     List<Event> findByState(EventState state);
 
     @Query("select e from Event e where (lower(e.annotation) like lower(concat('%', ?1, '%'))" +

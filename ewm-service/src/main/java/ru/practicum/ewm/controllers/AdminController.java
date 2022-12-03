@@ -29,44 +29,44 @@ public class AdminController {
             @RequestParam(name = "rangeEnd", required = false) String rangeEnd,
             @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
             @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
-        log.info("Обработан GET-запрос (/events");
+        log.info("Обработан GET-запрос (/admin/events");
         return adminService.getEvents(users, states, categories, rangeStart, rangeEnd, from, size);
     }
 
     @PutMapping(path = "/events/{eventId}")
     public EventFullDto updateEvent(@RequestBody AdminUpdateEventRequest updateEventRequest,
                                     @PathVariable(name = "eventId") int eventId) {
-        log.info("Обработан PUT-запрос /events/" + eventId);
+        log.info("Обработан PUT-запрос /admin/events/" + eventId);
         return adminService.updateEvent(updateEventRequest, eventId);
     }
 
     @PatchMapping(path = "/events/{eventId}/publish")
     public EventFullDto publishEvent(@PathVariable(name = "eventId") int eventId) {
-        log.info("Обработан PATCH-запрос /events/" + eventId + "/publish");
+        log.info("Обработан PATCH-запрос /admin/events/" + eventId + "/publish");
         return adminService.publishEvent(eventId);
     }
 
     @PatchMapping(path = "/events/{eventId}/reject")
     public EventFullDto rejectEvent(@PathVariable(name = "eventId") int eventId) {
-        log.info("Обработан PATCH-запрос /events/" + eventId + "/reject");
+        log.info("Обработан PATCH-запрос /admin/events/" + eventId + "/reject");
         return adminService.rejectEvent(eventId);
     }
 
     @PatchMapping(path = "/categories")
     public CategoryDto updateCategory(@RequestBody CategoryDto categoryDto) {
-        log.info("Обработан PATCH-запрос /categories");
+        log.info("Обработан PATCH-запрос /admin/categories");
         return adminService.updateCategory(categoryDto);
     }
 
     @PostMapping(path = "/categories")
     public CategoryDto createCategory(@Valid @RequestBody NewCategoryDto newCategoryDto) {
-        log.info("Обработан POST-запрос /categories");
+        log.info("Обработан POST-запрос /admin/categories");
         return adminService.createCategory(newCategoryDto);
     }
 
     @DeleteMapping(path = "/categories/{catId}")
     public void deleteCategory(@PathVariable(name = "catId") int catId) {
-        log.info("Обработан DELETE-запрос /categories/" + catId);
+        log.info("Обработан DELETE-запрос /admin/categories/" + catId);
         adminService.deleteCategory(catId);
     }
 
@@ -74,57 +74,57 @@ public class AdminController {
     public List<UserDto> getUsers(@PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
                                   @Positive @RequestParam(name = "size", defaultValue = "10") int size,
                                   @RequestParam(name = "ids", required = false) List<Integer> users) {
-        log.info("Обработан GET-запрос /users");
+        log.info("Обработан GET-запрос /admin/users");
         return adminService.getUsers(users, from, size);
     }
 
     @PostMapping("/users")
     public UserDto createUser(@Valid @RequestBody NewUserRequest newUserRequest) {
-        log.info("Обработан POST-запрос /users");
+        log.info("Обработан POST-запрос /admin/users");
         return adminService.createUser(newUserRequest);
     }
 
     @DeleteMapping("/users/{userId}")
     public void deleteUser(@PathVariable int userId) {
-        log.info("Обработан DELETE-запрос /users/" + userId);
+        log.info("Обработан DELETE-запрос /admin/users/" + userId);
         adminService.deleteUser(userId);
     }
 
     @PostMapping("/compilations")
     public CompilationDto createCompilation(@Valid @RequestBody NewCompilationDto newCompilationDto) {
-        log.info("Обработан POST-запрос /compilations");
+        log.info("Обработан POST-запрос /admin/compilations");
         return adminService.createCompilation(newCompilationDto);
     }
 
     @DeleteMapping("/compilations/{compId}")
     public void deleteCompilation(@PathVariable(name = "compId") int compId) {
-        log.info("Обработан DELETE-запрос /compilations/" + compId);
+        log.info("Обработан DELETE-запрос /admin/compilations/" + compId);
         adminService.deleteCompilation(compId);
     }
 
     @DeleteMapping("/compilations/{compId}/events/{eventId}")
     public void deleteEventFromCompilation(@PathVariable(name = "compId") int compId,
                                            @PathVariable(name = "eventId") int eventId) {
-        log.info("Обработан DELETE-запрос /compilations/" + compId + "/events/" + eventId);
+        log.info("Обработан DELETE-запрос /admin/compilations/" + compId + "/events/" + eventId);
         adminService.deleteEventFromCompilation(compId, eventId);
     }
 
     @PatchMapping("/compilations/{compId}/events/{eventId}")
     public void addEventToCompilation(@PathVariable(name = "compId") int compId,
                                       @PathVariable(name = "eventId") int eventId) {
-        log.info("Обработан PATCH-запрос /compilations/" + compId + "/events/" + eventId);
+        log.info("Обработан PATCH-запрос /admin/compilations/" + compId + "/events/" + eventId);
         adminService.addEventToCompilation(compId, eventId);
     }
 
     @DeleteMapping("/compilations/{compId}/pin")
     public void deletePinFromCompilation(@PathVariable(name = "compId") int compId) {
-        log.info("Обработан DELETE-запрос /compilations/" + compId + "/pin");
+        log.info("Обработан DELETE-запрос /admin/compilations/" + compId + "/pin");
         adminService.deletePinFromCompilation(compId);
     }
 
     @PatchMapping("/compilations/{compId}/pin")
     public void addPinToCompilation(@PathVariable(name = "compId") int compId) {
-        log.info("Обработан PATCH-запрос /compilations/" + compId + "/pin");
+        log.info("Обработан PATCH-запрос /admin/compilations/" + compId + "/pin");
         adminService.addPinToCompilation(compId);
     }
 }

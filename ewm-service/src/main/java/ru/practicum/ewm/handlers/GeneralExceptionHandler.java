@@ -28,6 +28,15 @@ public class GeneralExceptionHandler {
                 "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern(JsonConstants.pattern)));
     }
 
+    @ExceptionHandler({RuntimeException.class})
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleRuntimeException(final RuntimeException e) {
+        return Map.of("status", HttpStatus.INTERNAL_SERVER_ERROR.toString(),
+                "reason", "Internal Server error",
+                "message", e.getMessage(),
+                "timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern(JsonConstants.pattern)));
+    }
+
     @ExceptionHandler({EntityNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleEntityNotFoundValidation(final EntityNotFoundException e) {
