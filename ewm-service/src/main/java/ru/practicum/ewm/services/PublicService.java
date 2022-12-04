@@ -141,21 +141,11 @@ public class PublicService {
                 userDto, getViews(event.getId()), getRating(event.getId()));
     }
 
-    public CategoryDto getCategoryDtoById(int catId) {
-        return categoryMapper.toDto(categoryRepository.findById(catId)
-                .orElseThrow(() -> new EntityNotFoundException("Категория " + catId + " не найдена")));
-    }
-
-    public UserShortDto getUserShortDtoById(int userId) {
-        return userMapper.toShortDto(userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Пользователь " + userId + " не найден")));
-    }
-
     public int getConfirmedRequests(Event e) {
         return requestRepository.findByEventIdAndStatus(e.getId(), RequestStatus.CONFIRMED).size();
     }
 
-    public int getViews(int eventId) {
+    private int getViews(int eventId) {
         int views = 0;
         for (ViewStats v : statsClient.getStats(eventId)) {
             views += v.getHits();
@@ -175,5 +165,15 @@ public class PublicService {
             }
         }
         return rating;
+    }
+
+    private CategoryDto getCategoryDtoById(int catId) {
+        return categoryMapper.toDto(categoryRepository.findById(catId)
+                .orElseThrow(() -> new EntityNotFoundException("Категория " + catId + " не найдена")));
+    }
+
+    private UserShortDto getUserShortDtoById(int userId) {
+        return userMapper.toShortDto(userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь " + userId + " не найден")));
     }
 }

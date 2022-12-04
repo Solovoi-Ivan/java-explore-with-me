@@ -309,13 +309,13 @@ public class PrivateService {
         return publicService.getEventShortDto(event);
     }
 
-    public void participantLimitValidation(Event e) {
+    private void participantLimitValidation(Event e) {
         if (e.getParticipantLimit() - publicService.getConfirmedRequests(e) == 0 && e.getParticipantLimit() != 0) {
             throw new RuntimeException("Превышен лимит количества участников");
         }
     }
 
-    public UserEventRating ratingValidation(User user, Event event) {
+    private UserEventRating ratingValidation(User user, Event event) {
         UserEventRating userEventRating = userEventRatingRepository
                 .findById(new UserEventRatingId(user.getId(), event.getId()))
                 .orElse(null);

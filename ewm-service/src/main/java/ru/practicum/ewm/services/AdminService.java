@@ -213,7 +213,7 @@ public class AdminService {
         compilationRepository.save(compilation);
     }
 
-    public Double addUserRating(User user) {
+    private Double addUserRating(User user) {
         List<Integer> list = eventRepository.findByInitiatorIdAndState(user.getId(), EventState.PUBLISHED).stream()
                 .map(e -> publicService.getRating(e.getId()))
                 .collect(Collectors.toList());
