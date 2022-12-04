@@ -8,8 +8,8 @@ import ru.practicum.ewm.entities.User;
 
 @Component
 public class UserMapper {
-    public UserDto toDto(User u) {
-        return new UserDto(u.getEmail(), u.getId(), u.getName());
+    public UserDto toDto(User u, double rating) {
+        return new UserDto(u.getEmail(), u.getId(), u.getName(), rating);
     }
 
     public UserShortDto toShortDto(User u) {

@@ -59,3 +59,11 @@ CREATE TABLE IF NOT EXISTS EVENTS_COMPILATIONS
     event_id       INT NOT NULL REFERENCES EVENTS (event_id) ON DELETE CASCADE,
     CONSTRAINT pk_events_compilations PRIMARY KEY (compilation_id, event_id)
 );
+
+CREATE TABLE IF NOT EXISTS USER_EVENT_RATINGS
+(
+    user_id     INT NOT NULL REFERENCES USERS (user_id) ON DELETE CASCADE,
+    event_id    INT NOT NULL REFERENCES EVENTS (event_id) ON DELETE CASCADE,
+    is_positive BOOLEAN,
+    CONSTRAINT pk_events_likes PRIMARY KEY (user_id, event_id)
+);

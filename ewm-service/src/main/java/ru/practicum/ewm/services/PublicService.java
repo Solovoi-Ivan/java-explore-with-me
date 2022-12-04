@@ -8,6 +8,7 @@ import ru.practicum.ewm.client.StatsClient;
 import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.entities.Compilation;
 import ru.practicum.ewm.entities.Event;
+import ru.practicum.ewm.entities.UserEventRating;
 import ru.practicum.ewm.mappers.CategoryMapper;
 import ru.practicum.ewm.mappers.CompilationMapper;
 import ru.practicum.ewm.mappers.EventMapper;
@@ -31,6 +32,7 @@ public class PublicService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final ParticipationRequestRepository requestRepository;
+    private final UserEventRatingRepository userEventRatingRepository;
     private final EventMapper eventMapper;
     private final CompilationMapper compilationMapper;
     private final CategoryMapper categoryMapper;
@@ -69,6 +71,10 @@ public class PublicService {
         } else if (sort != null && EventSort.valueOf(sort).equals(EventSort.EVENT_DATE)) {
             eventListDto = eventListDto.stream()
                     .sorted(Comparator.comparing(EventShortDto::getEventDate))
+                    .collect(Collectors.toList());
+        } else if (sort != null && EventSort.valueOf(sort).equals(EventSort.RATING)) {
+            eventListDto = eventListDto.stream()
+                    .sorted(Comparator.comparing(EventShortDto::getRating))
                     .collect(Collectors.toList());
         }
         statsClient.addEndpointHit("app", "/events", "ip");
@@ -124,35 +130,50 @@ public class PublicService {
 
     public EventFullDto getEventFullDto(Event event) {
         return eventMapper.toDto(event, getCategoryDtoById(event.getCategoryId()),
-                getConfirmedRequests(event), getUserShortDtoById(event.getInitiatorId()), getViews(event.getId()));
+                getConfirmedRequests(event), getUserShortDtoById(event.getInitiatorId()),
+                getViews(event.getId()), getRating(event.getId()));
     }
 
     public EventShortDto getEventShortDto(Event event) {
         CategoryDto catDto = getCategoryDtoById(event.getCategoryId());
         UserShortDto userDto = getUserShortDtoById(event.getInitiatorId());
-        return eventMapper.toShortDto(event, catDto, getConfirmedRequests(event), userDto, getViews(event.getId()));
-    }
-
-    public CategoryDto getCategoryDtoById(int catId) {
-        return categoryMapper.toDto(categoryRepository.findById(catId)
-                .orElseThrow(() -> new EntityNotFoundException("Категория " + catId + " не найдена")));
-    }
-
-    public UserShortDto getUserShortDtoById(int userId) {
-        return userMapper.toShortDto(userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Пользователь " + userId + " не найден")));
+        return eventMapper.toShortDto(event, catDto, getConfirmedRequests(event),
+                userDto, getViews(event.getId()), getRating(event.getId()));
     }
 
     public int getConfirmedRequests(Event e) {
         return requestRepository.findByEventIdAndStatus(e.getId(), RequestStatus.CONFIRMED).size();
     }
 
-    public int getViews(int eventId) {
+    private int getViews(int eventId) {
         int views = 0;
         for (ViewStats v : statsClient.getStats(eventId)) {
             views += v.getHits();
         }
 
         return views;
+    }
+
+    public int getRating(int eventId) {
+        int rating = 0;
+        List<UserEventRating> list = userEventRatingRepository.findByEventId(eventId);
+        for (UserEventRating userEventRating : list) {
+            if (userEventRating.getIsPositive()) {
+                rating++;
+            } else {
+                rating--;
+            }
+        }
+        return rating;
+    }
+
+    private CategoryDto getCategoryDtoById(int catId) {
+        return categoryMapper.toDto(categoryRepository.findById(catId)
+                .orElseThrow(() -> new EntityNotFoundException("Категория " + catId + " не найдена")));
+    }
+
+    private UserShortDto getUserShortDtoById(int userId) {
+        return userMapper.toShortDto(userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь " + userId + " не найден")));
     }
 }

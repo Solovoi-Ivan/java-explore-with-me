@@ -12,4 +12,5 @@ public class UserDto {
     private String email;
     private Integer id;
     private String name;
+    private Double rating;
 }
